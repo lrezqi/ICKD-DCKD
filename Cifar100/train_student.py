@@ -27,6 +27,8 @@ from helper.util import adjust_learning_rate
 from distiller_zoo import DistillKL, HintLoss, Attention, Similarity, Correlation, VIDLoss, RKDLoss
 from distiller_zoo import PKT, ABLoss, FactorTransfer, KDSVD, FSP, NSTLoss, ICKDLoss, AFD
 from crd.criterion import CRDLoss
+from distiller_zoo.DCKD import DCKDLoss
+
 
 from helper.loops import train_distill as train, validate
 from helper.pretrain import init
@@ -79,7 +81,8 @@ def parse_option():
     # distillation
     parser.add_argument('--distill', type=str, default='kd', choices=['afd', 'ickd', 'kd', 'hint', 'attention', 'similarity',
                                                                       'correlation', 'vid', 'crd', 'kdsvd', 'fsp',
-                                                                      'rkd', 'pkt', 'abound', 'factor', 'nst'])
+                                                                      'rkd', 'pkt', 'abound', 'factor', 'nst','dckd'])
+
     parser.add_argument('--trial', type=str, default='1', help='trial id')
     
     parser.add_argument('--seed', type=int, default=0, help='random seed')
@@ -310,6 +313,16 @@ def main():
         init(model_s, model_t, init_trainable_list, criterion_kd, train_loader, logger, opt)
         # classification training
         pass
+    elif opt.distill == 'dckd':
+        opt.s_dim = feat_s[-2].shape[1]
+        opt.t_dim = feat_t[-2].shape[1]
+        opt.feat_dim = opt.t_dim
+        criterion_kd = DCKDLoss(opt)
+        module_list.append(criterion_kd.embed_s)
+        module_list.append(criterion_kd.embed_t)
+        trainable_list.append(criterion_kd.embed_s)
+        trainable_list.append(criterion_kd.embed_t)
+
     else:
         raise NotImplementedError(opt.distill)
 
