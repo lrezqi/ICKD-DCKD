@@ -79,6 +79,8 @@ def parse_option():
     parser.add_argument('--model_t', type=str, required=True, help='teacher model')
 
     parser.add_argument('--path_t', type=str, default=None, help='teacher model snapshot')
+    parser.add_argument('--path_s', type=str, default=None, help='student model path (optional)')
+
 
     # distillation
     parser.add_argument('--distill', type=str, default='kd', choices=['afd', 'ickd', 'kd', 'hint', 'attention', 'similarity',
