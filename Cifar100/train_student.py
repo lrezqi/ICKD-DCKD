@@ -145,13 +145,15 @@ def parse_option():
     return opt
 
 
+import os
+
 def get_teacher_name(model_path):
-    """parse teacher name"""
-    segments = model_path.split('/')[-2].split('_')
-    if segments[0] != 'wrn':
-        return segments[0]
+    """Parse le nom du modèle enseignant à partir du nom de fichier"""
+    filename = os.path.basename(model_path)  # ex: resnet32x4_best.pth
+    if filename.startswith("wrn"):
+        return "_".join(filename.split('_')[:3])  # wrn_40_2
     else:
-        return segments[0] + '_' + segments[1] + '_' + segments[2]
+        return filename.split('_')[0] if 'x4' not in filename else filename.split('_')[0]
 
 
 def load_teacher(model_path, n_cls):
