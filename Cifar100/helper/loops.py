@@ -192,22 +192,17 @@ def train_distill(epoch, train_loader, module_list, criterion_list, optimizer, o
             for batch_idx, (input, target, _, index) in enumerate(train_loader):
                 input = input.cuda()
                 target = target.cuda()
-    
                 # Forward pass
                 feat_s, logit_s = model_s(input, is_feat=True)
                 with torch.no_grad():
                     feat_t, logit_t = model_t(input, is_feat=True)
-    
                 loss_cls = criterion_cls(logit_s, target)
                 loss_div = criterion_div(logit_s, logit_t)
                 loss_kd = criterion_kd(feat_s, feat_t)
-    
                 loss = opt.gamma * loss_cls + opt.alpha * loss_div + opt.beta * loss_kd
-    
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
-
         else:
             raise NotImplementedError(opt.distill)
         loss = opt.gamma * loss_cls + opt.alpha * loss_div + opt.beta * loss_kd
