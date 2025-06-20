@@ -84,7 +84,6 @@ def train_distill(epoch, train_loader, module_list, criterion_list, optimizer, o
 
     model_s = module_list[0]
     model_t = module_list[-1]
-
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
@@ -186,10 +185,10 @@ def train_distill(epoch, train_loader, module_list, criterion_list, optimizer, o
             factor_t = module_list[2](feat_t[-2], is_factor=True)
             loss_kd = criterion_kd(factor_s, factor_t)
         elif opt.distill == 'dckd':
-        # Exemple minimal, à adapter selon le papier / code original
+            # Exemple minimal, à adapter selon le papier / code original
             model_s.train()
             model_t.eval()
-
+            
             for batch_idx, (input, target, _, index) in enumerate(train_loader):
                 input = input.cuda()
                 target = target.cuda()
