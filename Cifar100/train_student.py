@@ -320,14 +320,13 @@ def main():
         init(model_s, model_t, init_trainable_list, criterion_kd, train_loader, logger, opt)
         # classification training
         pass
-   elif opt.distill == 'dckd':
-    opt.s_dim = feat_s[-2].shape[1]
-    opt.t_dim = feat_t[-2].shape[1]
-    opt.feat_dim = opt.t_dim
-    criterion_kd = DCKDLoss(opt)
-    # Pas de embed_s/embed_t dans DCKDLoss, donc on ajoute simplement criterion_kd
-    module_list.append(criterion_kd)
-    trainable_list.append(criterion_kd)
+     elif opt.distill == 'dckd':
+        opt.s_dim = feat_s[-2].shape[1]
+        opt.t_dim = feat_t[-2].shape[1]
+        opt.feat_dim = opt.t_dim
+        criterion_kd = DCKDLoss(opt)
+        module_list.append(criterion_kd)
+        trainable_list.append(criterion_kd)
 
 
     else:
