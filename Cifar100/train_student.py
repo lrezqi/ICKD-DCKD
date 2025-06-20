@@ -319,6 +319,7 @@ def main():
         init_trainable_list.append(model_s.get_feat_modules())
         init(model_s, model_t, init_trainable_list, criterion_kd, train_loader, logger, opt)
         # classification training
+        pass
     elif opt.distill == 'dckd':
         opt.s_dim = feat_s[-2].shape[1]
         opt.t_dim = feat_t[-2].shape[1]
@@ -326,7 +327,6 @@ def main():
         criterion_kd = DCKDLoss(opt)
         module_list.append(criterion_kd)
         trainable_list.append(criterion_kd)
-        pass
     else:
         raise NotImplementedError(opt.distill)
 
