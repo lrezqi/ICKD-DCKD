@@ -194,40 +194,9 @@ def train_distill(epoch, train_loader, module_list, criterion_list, optimizer, o
         elif opt.distill == "factor":
             factor_s = module_list[1](feat_s[-2])
             factor_t = module_list[2](feat_t[-2], is_factor=True)
-            loss_kd = criterion_kd(factor_s, factor_t)
-            --- a/Cifar100/helper/loops.py
-+++ b/Cifar100/helper/loops.py
-@@      elif opt.distill == 'dckd':
--        # Exemple minimal, à adapter selon le papier / code original
--        model_s.train()
--        model_t.eval()
--
--            for batch_idx, (input, target, _, index) in enumerate(train_loader):
-    -            input = input.cuda()
-    -            target = target.cuda()
-    -
-    -            # Forward pass
-    -            feat_s, logit_s = model_s(input, is_feat=True)
-    -            with torch.no_grad():
-    -                feat_t, logit_t = model_t(input, is_feat=True)
-    -
-    -            loss_cls = criterion_cls(logit_s, target)
-    -            loss_div = criterion_div(logit_s, logit_t)
-    -            loss_kd = criterion_kd(feat_s, feat_t)
-    -
-    -            loss = opt.gamma * loss_cls + opt.alpha * loss_div + opt.beta * loss_kd
-    -
-    -            optimizer.zero_grad()
-    -            loss.backward()
-    -            optimizer.step()
-    +        # DCKD : on utilise directement les features du batch courant
-    +        # feat_s et feat_t ont déjà été calculés juste au-dessus
-    +        # Ici on prend l’avant-dernier vecteur de feature (comme pour ICKD)
-    +        g_s = [feat_s[-2]]
-    +        g_t = [feat_t[-2]]
-    +        # criterion_kd doit renvoyer un iterable de pertes
-    +            loss_kd = sum(criterion_kd(g_s, g_t))
-        else:
+            loss_kd = criterion_kd(factor_s, factor_t)        
+        elif opt.distill == 'dckd':
+-       else:
             raise NotImplementedError(opt.distill)
         loss = opt.gamma * loss_cls + opt.alpha * loss_div + opt.beta * loss_kd
         acc1, acc5 = accuracy(logit_s, target, topk=(1, 5))
