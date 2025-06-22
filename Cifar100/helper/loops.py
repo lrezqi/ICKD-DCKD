@@ -194,34 +194,31 @@ def train_distill(epoch, train_loader, module_list, criterion_list, optimizer, o
         elif opt.distill == "factor":
             factor_s = module_list[1](feat_s[-2])
             factor_t = module_list[2](feat_t[-2], is_factor=True)
-            loss_kd = criterion_kd(factor_s, factor_t)        
-        elif opt.distill == 'dckd':
-            g_s = [feat_s[-2]]
-            g_t = [feat_t[-2]]
-            tmp = criterion_kd(g_s, g_t)
-            loss_kd = tmp if not isinstance(tmp, (list, tuple)) else sum(tmp)
+            loss_kd = criterion_kd(factor_s, factor_t)     
+                if opt.distill == 'kd':
+        loss_kd = criterion_kd(logit_s, logit_t)
     elif opt.distill == 'dckd':
-        model_s.train()
-        model_t.eval()
-        for batch_idx, (input, target, _, index) in enumerate(train_loader):
-            input = input.cuda()
-            target = target.cuda()
-            feat_s, logit_s = model_s(input, is_feat=True)
-            with torch.no_grad():
-                feat_t, logit_t = model_t(input, is_feat=True)
-            loss_cls = criterion_cls(logit_s, target)
-            loss_div = criterion_div(logit_s, logit_t)
-            loss_kd = criterion_kd(feat_s, feat_t)
-            loss = opt.gamma * loss_cls + opt.alpha * loss_div + opt.beta * loss_kd
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-        loss = opt.gamma * loss_cls + opt.alpha * loss_div + opt.beta * loss_kd
-        acc1, acc5 = accuracy(logit_s, target, topk=(1, 5))
-        losses.update(loss.item(), input.size(0))
-        top1.update(acc1[0], input.size(0))
-        top5.update(acc5[0], input.size(0))
+        # DCKD : on applique KD sur la couche -2
+        g_s = [feat_s[-2]]
+        g_t = [feat_t[-2]]
+        tmp = criterion_kd(g_s, g_t)
+        loss_kd = tmp if not isinstance(tmp, (list, tuple)) else sum(tmp)
+    else:
+        raise NotImplementedError(opt.distill)
 
+    # Perte totale
+    loss = opt.gamma * loss_cls + opt.alpha * loss_div + opt.beta * loss_kd
+
+    # Backpropagation
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+
+    # Statistiques
+    acc1, acc5 = accuracy(logit_s, target, topk=(1, 5))
+    losses.update(loss.item(), input.size(0))
+    top1.update(acc1[0], input.size(0))
+    top5.update(acc5[0], input.size(0))
         # ===================backward=====================
         optimizer.zero_grad()
         loss.backward()
