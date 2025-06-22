@@ -200,7 +200,7 @@ def train_distill(epoch, train_loader, module_list, criterion_list, optimizer, o
             g_t = [feat_t[-2]]
             tmp = criterion_kd(g_s, g_t)
             loss_kd = tmp if not isinstance(tmp, (list, tuple)) else sum(tmp)
--       else:
+        else:
             raise NotImplementedError(opt.distill)
         loss = opt.gamma * loss_cls + opt.alpha * loss_div + opt.beta * loss_kd
         acc1, acc5 = accuracy(logit_s, target, topk=(1, 5))
