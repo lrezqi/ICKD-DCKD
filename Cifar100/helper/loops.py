@@ -204,19 +204,19 @@ def train_distill(epoch, train_loader, module_list, criterion_list, optimizer, o
         else:
             raise NotImplementedError(opt.distill)
 
-    # Perte totale
-    loss = opt.gamma * loss_cls + opt.alpha * loss_div + opt.beta * loss_kd
-
-    # Backpropagation
-    optimizer.zero_grad()
-    loss.backward()
-    optimizer.step()
-
-    # Statistiques
-    acc1, acc5 = accuracy(logit_s, target, topk=(1, 5))
-    losses.update(loss.item(), input.size(0))
-    top1.update(acc1[0], input.size(0))
-    top5.update(acc5[0], input.size(0))
+        # Perte totale
+        loss = opt.gamma * loss_cls + opt.alpha * loss_div + opt.beta * loss_kd
+    
+        # Backpropagation
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+    
+        # Statistiques
+        acc1, acc5 = accuracy(logit_s, target, topk=(1, 5))
+        losses.update(loss.item(), input.size(0))
+        top1.update(acc1[0], input.size(0))
+        top5.update(acc5[0], input.size(0))
         # ===================backward=====================
         optimizer.zero_grad()
         loss.backward()
