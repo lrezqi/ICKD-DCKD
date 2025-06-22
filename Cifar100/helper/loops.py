@@ -130,7 +130,7 @@ def train_distill(epoch, train_loader, module_list, criterion_list, optimizer, o
         loss_div = criterion_div(logit_s, logit_t)
         # other kd beyond KL divergence
          if opt.distill == 'kd':
-            loss_kd = 0
+            loss_kd = criterion_kd(logit_s, logit_t)
         elif opt.distill == 'afd':
             loss_kd = criterion_kd(feat_s, feat_t)
         elif opt.distill == 'hint':
@@ -195,14 +195,12 @@ def train_distill(epoch, train_loader, module_list, criterion_list, optimizer, o
             factor_s = module_list[1](feat_s[-2])
             factor_t = module_list[2](feat_t[-2], is_factor=True)
             loss_kd = criterion_kd(factor_s, factor_t)
-                if opt.distill == 'kd':
-            loss_kd = criterion_kd(logit_s, logit_t)
         elif opt.distill == 'dckd':
-            # DCKD : on applique KD sur la couche -2
             g_s = [feat_s[-2]]
             g_t = [feat_t[-2]]
             tmp = criterion_kd(g_s, g_t)
             loss_kd = tmp if not isinstance(tmp, (list, tuple)) else sum(tmp)
+
         else:
             raise NotImplementedError(opt.distill)
 
