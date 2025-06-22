@@ -200,7 +200,6 @@ def train_distill(epoch, train_loader, module_list, criterion_list, optimizer, o
             g_t = [feat_t[-2]]
             tmp = criterion_kd(g_s, g_t)
             loss_kd = tmp if not isinstance(tmp, (list, tuple)) else sum(tmp)
-        else:
     elif opt.distill == 'dckd':
         model_s.train()
         model_t.eval()
