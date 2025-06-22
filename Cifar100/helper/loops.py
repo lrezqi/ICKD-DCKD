@@ -129,72 +129,72 @@ def train_distill(epoch, train_loader, module_list, criterion_list, optimizer, o
         loss_cls = criterion_cls(logit_s, target)
         loss_div = criterion_div(logit_s, logit_t)
         # other kd beyond KL divergence
-        if opt.distill == "kd":
+         if opt.distill == 'kd':
             loss_kd = 0
-        elif opt.distill == "afd":
+        elif opt.distill == 'afd':
             loss_kd = criterion_kd(feat_s, feat_t)
-        elif opt.distill == "hint":
+        elif opt.distill == 'hint':
             f_s = module_list[1](feat_s[opt.hint_layer])
             f_t = feat_t[opt.hint_layer]
             loss_kd = criterion_kd(f_s, f_t)
-        elif opt.distill == "crd":
+        elif opt.distill == 'crd':
             f_s = feat_s[-1]
             f_t = feat_t[-1]
             loss_kd = criterion_kd(f_s, f_t, index, contrast_idx)
             g_s = [feat_s[-2]]
             g_t = [feat_t[-2]]
-        elif opt.distill == "attention":
+        elif opt.distill == 'attention':
             g_s = feat_s[1:-1]
             g_t = feat_t[1:-1]
             loss_group = criterion_kd(g_s, g_t)
             loss_kd = sum(loss_group)
-        elif opt.distill == "nst":
+        elif opt.distill == 'nst':
             g_s = feat_s[1:-1]
             g_t = feat_t[1:-1]
             loss_group = criterion_kd(g_s, g_t)
             loss_kd = sum(loss_group)
-        elif opt.distill == "similarity":
+        elif opt.distill == 'similarity':
             g_s = [feat_s[-2]]
             g_t = [feat_t[-2]]
             loss_group = criterion_kd(g_s, g_t)
             loss_kd = sum(loss_group)
-        elif opt.distill == "ickd":
+        elif opt.distill == 'ickd':
             g_s = [feat_s[-2]]
             g_t = [feat_t[-2]]
             loss_group = criterion_kd(g_s, g_t)
             loss_kd = sum(loss_group)
-        elif opt.distill == "rkd":
+        elif opt.distill == 'rkd':
             f_s = feat_s[-1]
             f_t = feat_t[-1]
             loss_kd = criterion_kd(f_s, f_t)
-        elif opt.distill == "pkt":
+        elif opt.distill == 'pkt':
             f_s = feat_s[-1]
             f_t = feat_t[-1]
             loss_kd = criterion_kd(f_s, f_t)
-        elif opt.distill == "kdsvd":
+        elif opt.distill == 'kdsvd':
             g_s = feat_s[1:-1]
             g_t = feat_t[1:-1]
             loss_group = criterion_kd(g_s, g_t)
             loss_kd = sum(loss_group)
-        elif opt.distill == "correlation":
+        elif opt.distill == 'correlation':
             f_s = module_list[1](feat_s[-1])
             f_t = module_list[2](feat_t[-1])
             loss_kd = criterion_kd(f_s, f_t)
-        elif opt.distill == "vid":
+        elif opt.distill == 'vid':
             g_s = feat_s[1:-1]
             g_t = feat_t[1:-1]
             loss_group = [c(f_s, f_t) for f_s, f_t, c in zip(g_s, g_t, criterion_kd)]
             loss_kd = sum(loss_group)
-        elif opt.distill == "abound":
+        elif opt.distill == 'abound':
             # can also add loss to this stage
             loss_kd = 0
-        elif opt.distill == "fsp":
+        elif opt.distill == 'fsp':
             # can also add loss to this stage
             loss_kd = 0
-        elif opt.distill == "factor":
+        elif opt.distill == 'factor':
             factor_s = module_list[1](feat_s[-2])
             factor_t = module_list[2](feat_t[-2], is_factor=True)
-            loss_kd = criterion_kd(factor_s, factor_t)     
+            loss_kd = criterion_kd(factor_s, factor_t)
                 if opt.distill == 'kd':
             loss_kd = criterion_kd(logit_s, logit_t)
         elif opt.distill == 'dckd':
