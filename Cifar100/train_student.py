@@ -7,7 +7,7 @@ import argparse
 import socket
 import time
 
- # import tensorboard_logger as tb_logger
+import tensorboard_logger as tb_logger
 from torch.utils.tensorboard import SummaryWriter
 import torch
 import torch.optim as optim
