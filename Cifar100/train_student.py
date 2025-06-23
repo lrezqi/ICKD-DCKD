@@ -14,7 +14,7 @@ import torch.optim as optim
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
 
-
+from torch.utils.tensorboard import SummaryWriter
 from models import model_dict, LAYER
 from models.util import Embed, ConvReg, LinearEmbed
 from models.util import Connector, Translator, Paraphraser
@@ -184,8 +184,8 @@ def main():
     set_random_seed(opt.seed, True)
 
     # tensorboard logger
-    logger = tb_logger.Logger(logdir=opt.tb_folder, flush_secs=2)
-
+    # logger = tb_logger.Logger(logdir=opt.tb_folder, flush_secs=2)
+    logger = SummaryWriter(log_dir=opt.tb_folder)
     # dataloader
     if opt.dataset == 'cifar100':
         if opt.distill in ['crd']:
