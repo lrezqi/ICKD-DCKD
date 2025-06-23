@@ -198,7 +198,8 @@ def train_distill(epoch, train_loader, module_list, criterion_list, optimizer, o
         elif opt.distill == 'dckd':
             g_s = [feat_s[-2]]
             g_t = [feat_t[-2]]
-            tmp = criterion_kd(g_s, g_t)
+           # tmp = criterion_kd(g_s, g_t)
+            tmp = criterion_kd(student_features=g_s, teacher_features=g_t)
             loss_kd = tmp if not isinstance(tmp, (list, tuple)) else sum(tmp)
 
 
