@@ -3,7 +3,6 @@ from __future__ import division, print_function
 
 import sys
 import time
-
 import torch
 
 from .feature_visualization import FeatureVisualizer
