@@ -117,6 +117,7 @@ def main():
     for epoch in range(1, opt.epochs + 1):
 
         adjust_learning_rate(epoch, opt, optimizer)
+        
         print("==> training...")
 
         time1 = time.time()
