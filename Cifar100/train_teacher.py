@@ -12,7 +12,7 @@ import torch.nn as nn
 import torch.backends.cudnn as cudnn
 
 from models import model_dict
-from model.resnet import resnet110 
+from models.resnet import resnet110
 from dataset.cifar100 import get_cifar100_dataloaders
 
 from helper.util import adjust_learning_rate, accuracy, AverageMeter
