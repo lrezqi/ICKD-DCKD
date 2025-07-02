@@ -128,7 +128,7 @@ def train_distill(epoch, train_loader, module_list, criterion_list, optimizer, o
         loss_cls = criterion_cls(logit_s, target)
         loss_div = criterion_div(logit_s, logit_t)
         # other kd beyond KL divergence
-         if opt.distill == 'kd':
+        if opt.distill == 'kd':
             loss_kd = criterion_kd(logit_s, logit_t)
         elif opt.distill == 'afd':
             loss_kd = criterion_kd(feat_s, feat_t)
