@@ -12,7 +12,7 @@ import torch.nn as nn
 import torch.backends.cudnn as cudnn
 
 from models import model_dict
-from model.wideresnet import wideresnet40  
+from model.resnet import resnet110 
 from dataset.cifar100 import get_cifar100_dataloaders
 
 from helper.util import adjust_learning_rate, accuracy, AverageMeter
@@ -40,8 +40,8 @@ def parse_option():
     parser.add_argument('--momentum', type=float, default=0.9, help='momentum')
 
     # dataset
-    parser.add_argument('--model', type=str, default='wideresnet40',
-                        choices=['resnet8', 'resnet14', 'resnet20', 'resnet32', 'resnet44', 'resnet56', 'resnet110','wideresnet40',
+    parser.add_argument('--model', type=str, default='resnet110',
+                        choices=['resnet8', 'resnet14', 'resnet20', 'resnet32', 'resnet44', 'resnet56', 'resnet110',
                                  'resnet8x4', 'resnet32x4', 'wrn_16_1', 'wrn_16_2', 'wrn_40_1', 'wrn_40_2',
                                  'vgg8', 'vgg11', 'vgg13', 'vgg16', 'vgg19',
                                  'MobileNetV2', 'ShuffleV1', 'ShuffleV2', ])
