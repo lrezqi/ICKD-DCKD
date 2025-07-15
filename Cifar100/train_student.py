@@ -324,7 +324,8 @@ def main():
         opt.s_dim = feat_s[-2].shape[1]
         opt.t_dim = feat_t[-2].shape[1]
         opt.feat_dim = opt.t_dim
-        criterion_kd = DCKDLoss(opt)
+        # criterion_kd = DCKDLoss(opt)
+        criterion_kd = DCKDLoss(temperature=opt.kd_T, alpha=opt.alpha, beta=opt.beta)
         # S'il n'y a pas d'attribut embed_s/embed_t dans DCKDLoss, ne pas les ajouter
         # Sinon, décommente les lignes suivantes si ces attributs existent :
         # module_list.append(criterion_kd.embed_s)
