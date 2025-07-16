@@ -219,7 +219,7 @@ def train_distill(epoch, train_loader, module_list, criterion_list, optimizer, o
         top5.update(acc5[0], input.size(0))
         # ===================backward=====================
         optimizer.zero_grad()
-        loss.backward()
+        loss.backward(retain_graph=True)
         optimizer.step()
 
         # ===================meters=====================
