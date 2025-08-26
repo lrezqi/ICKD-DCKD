@@ -8,14 +8,24 @@ class DCKDLoss(nn.Module):
     Distillation avec structure et diversité.
     Combine distillation classique avec corrélation inter-canaux.
     """
-    def __init__(self, temperature=4.0, alpha=0.5, beta=1.0):
-        super(DCKDLoss, self).__init__()
-        self.temperature = temperature
-        self.alpha = alpha  # KD loss
-        self.beta = beta    # Correlation loss
+    # def __init__(self, temperature=4.0, alpha=0.5, beta=1.0):
+    #   super(DCKDLoss, self).__init__()
+    #   self.temperature = temperature
+    #   self.alpha = alpha  # KD loss
+    #   self.beta = beta    # Correlation loss
 
         # Projection linéaire (sera initialisée dynamiquement au besoin)
+        # self.projection = None
+        
+    def __init__(self, temperature=4.0, alpha=0.5, beta=2.5):
+        super(DCKDLoss, self).__init__()
+        self.temperature = temperature
+        self.alpha = alpha # KD loss
+        self.beta = beta # Correlation loss
+
+       # Projection linéaire (sera initialisée dynamiquement au besoin)
         self.projection = None
+        self.initialized = False  # ← AJOUTE CETTE LIGNE
 
     def forward(self, student_logits, teacher_logits, student_features, teacher_features):
         # --- KD classique ---
@@ -33,9 +43,19 @@ class DCKDLoss(nn.Module):
             f_t = f_t.view(f_t.size(0), -1)
 
             # Adapter la dimension si nécessaire
-            if f_s.shape[1] != f_t.shape[1]:
-                self.projection = nn.Linear(f_s.shape[1], f_t.shape[1]).to(f_s.device)
+            # if f_s.shape[1] != f_t.shape[1]:
+            #   self.projection = nn.Linear(f_s.shape[1], f_t.shape[1]).to(f_s.device)
+            #    f_s = self.projection(f_s)
+
+            # Adapter la dimension si nécessaire
+            if not self.initialized:
+                if f_s.shape[1] != f_t.shape[1]:
+                    self.projection = nn.Linear(f_s.shape[1], f_t.shape[1]).to(f_s.device)
+                self.initialized = True
+
+            if self.projection is not None:
                 f_s = self.projection(f_s)
+
 
             # Cosine similarity
             corr_loss += 1 - F.cosine_similarity(f_s, f_t, dim=1).mean()
