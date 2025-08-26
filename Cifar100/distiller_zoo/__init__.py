@@ -1,4 +1,5 @@
 from .AB import ABLoss
+from .DCKD import DCKDLoss
 from .AT import Attention
 from .CC import Correlation
 from .FitNet import HintLoss
