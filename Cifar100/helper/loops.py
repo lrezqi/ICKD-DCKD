@@ -217,10 +217,31 @@ def train_distill(epoch, train_loader, module_list, criterion_list, optimizer, o
         losses.update(loss.item(), input.size(0))
         top1.update(acc1[0], input.size(0))
         top5.update(acc5[0], input.size(0))
-        # ===================backward=====================
+                # ===================backward=====================
+        # Mesure du temps
         optimizer.zero_grad()
+        batch_time.update(time.time() - end)
         loss.backward(retain_graph=True)
+        end = time.time()
         optimizer.step()
+        # Affichage
+        if idx % opt.print_freq == 0:
+            print(
+                f"Epoch: [{epoch}][{idx}/{len(train_loader)}]\t"
+                f"Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t"
+                f"Data {data_time.val:.3f} ({data_time.avg:.3f})\t"
+                f"Loss {losses.val:.4f} ({losses.avg:.4f})\t"
+                f"Acc@1 {top1.val:.3f} ({top1.avg:.3f})\t"
+                f"Acc@5 {top5.val:.3f} ({top5.avg:.3f})"
+            )
+            sys.stdout.flush()
+    print(f" * Acc@1 {top1.avg:.3f} Acc@5 {top5.avg:.3f}")
+    return top1.avg, losses.avg
+ 
+        # ===================backward=====================
+     #  optimizer.zero_grad()
+     #  loss.backward(retain_graph=True)
+     #  optimizer.step()
 
         # ===================meters=====================
         batch_time.update(time.time() - end)
