@@ -370,14 +370,14 @@ def main():
         time2 = time.time()
         print('epoch {}, total time {:.2f}'.format(epoch, time2 - time1))
 
-        logger.log_value('train_acc', train_acc, epoch)
-        logger.log_value('train_loss', train_loss, epoch)
+        logger.add_scalar('train_acc', train_acc, epoch)
+        logger.add_scalar('train_loss', train_loss, epoch)
 
         test_acc, tect_acc_top5, test_loss = validate(val_loader, model_s, criterion_cls, opt)
 
-        logger.log_value('test_acc', test_acc, epoch)
-        logger.log_value('test_loss', test_loss, epoch)
-        logger.log_value('test_acc_top5', tect_acc_top5, epoch)
+        logger.add_scalar('test_acc', test_acc, epoch)
+        logger.add_scalar('test_loss', test_loss, epoch)
+        logger.add_scalar('test_acc_top5', tect_acc_top5, epoch)
 
         # save the best model
         if test_acc > best_acc:
