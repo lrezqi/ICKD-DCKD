@@ -207,6 +207,7 @@ def train_distill(epoch, train_loader, module_list, criterion_list, optimizer, o
         # Perte totale
         loss = opt.gamma * loss_cls + opt.alpha * loss_div + opt.beta * loss_kd
     
+    
         # Backpropagation
         optimizer.zero_grad()
         loss.backward()
