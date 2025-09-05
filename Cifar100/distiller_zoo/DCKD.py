@@ -18,7 +18,7 @@ class DCKDLoss(nn.Module):
         # self.projection = None
         
     def __init__(self, temperature=4.0, alpha=0.5, beta=2.5, gamma=1.0, delta=0.0, use_diversity=False):
-        super(DCKDLoss, self).__init__()
+        super().__init__()
         self.temperature = temperature
         self.alpha = alpha    # poids KD
         self.beta = beta      # poids corrélation
@@ -29,14 +29,6 @@ class DCKDLoss(nn.Module):
        # Projection linéaire (sera initialisée dynamiquement au besoin)
         self.projection = None
         self.initialized = False  # ← AJOUTE CETTE LIGNE
-
-
-        # 3) Corrélation (votre code existant)
-        corr_loss = 0.0
-        for f_s, f_t in zip(student_features, teacher_features):
-            # ... votre logique actuelle pour corr_loss ...
-            pass
-          
 
     def forward(self, student_logits, teacher_logits, targets, student_features, teacher_features):
         # --- KD classique ---
@@ -65,20 +57,20 @@ class DCKDLoss(nn.Module):
                 f_s = self.projection(f_s)
 
             # Cosine similarity
-            corr_loss += 1 - F.cosine_similarity(f_s, f_t, dim=1).mean()
+            corr_loss = corr_loss + (1.0 - F.cosine_similarity(f_s, f_t, dim=1).mean())
             
-            # 4) Diversité (si vous ne l’avez pas encore, laissez à 0.0)
-            div_loss = 0.0
-            if self.use_diversity:
-            # placeholder; ajoutera une vraie implémentation à l’étape diversité
-                div_loss = 0.0
+        # 4) Diversité (désactivée pour cette étape)
+        div_loss = torch.tensor(0.0, device=student_logits.device)
             
-           # 5) Agrégation
+        # 5) Agrégation
         total_loss = self.gamma * cls_loss + self.alpha * kd_loss + self.beta * corr_loss
-        if self.use_diversity:
-            total_loss = total_loss + self.delta * div_loss
+        if self.use_diversity and self.delta != 0.0:
+                total_loss = total_loss + self.delta * div_loss
 
-        return total_loss, {'ce': cls_loss.detach(),
-                           'kd': kd_loss.detach(),
-                           'corr': torch.as_tensor(corr_loss).detach(),
-                           'div': torch.as_tensor(div_loss).detach()}
+        logs = {
+            'ce': cls_loss.detach(),
+            'kd': kd_loss.detach(),
+            'corr': torch.as_tensor(corr_loss, device=student_logits.device).detach(),
+            'div': div_loss.detach()
+        }
+        return total_loss, logs
