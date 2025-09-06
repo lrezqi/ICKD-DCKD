@@ -32,15 +32,18 @@ class DCKDLoss(nn.Module):
         # --- Corrélation inter-feature ---
         corr_loss = 0.0
         levels = 0
-        for f_s, f_t in zip(student_features, teacher_features):
+        for i, (f_s, f_t) in enumerate(zip(student_features, teacher_features)):
             # Aplatir
+            if f_s.dim() != 4 or f_t.dim() != 4:
+                raise ValueError(f"Expected 4D features at level {i}, got {f_s.shape} and {f_t.shape}")
             levels += 1
+            
             f_s = f_s.view(f_s.size(0), -1)
             f_t = f_t.view(f_t.size(0), -1)
 
             if not self.initialized:
-                if f_s.shape[1] != f_t.shape[1]:
-                    self.projection = nn.Linear(f_s.shape[1], f_t.shape[1]).to(f_s.device)
+                if f_s.shape != f_t.shape:
+                    self.projection = nn.Linear(f_s.shape, f_t.shape).to(f_s.device)
                 self.initialized = True
 
             if self.projection is not None:
@@ -48,6 +51,7 @@ class DCKDLoss(nn.Module):
 
             # Cosine similarity
             corr_loss = corr_loss + (1.0 - F.cosine_similarity(f_s, f_t, dim=1).mean())
+            
         if levels > 0:
             corr_loss = corr_loss / levels  
         # 4) Diversité (désactivée pour cette étape)
