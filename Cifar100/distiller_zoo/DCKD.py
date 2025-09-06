@@ -4,19 +4,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class DCKDLoss(nn.Module):
-    """
-    Distillation avec structure et diversité.
-    Combine distillation classique avec corrélation inter-canaux.
-    """
-    # def __init__(self, temperature=4.0, alpha=0.5, beta=1.0):
-    #   super(DCKDLoss, self).__init__()
-    #   self.temperature = temperature
-    #   self.alpha = alpha  # KD loss
-    #   self.beta = beta    # Correlation loss
-
-        # Projection linéaire (sera initialisée dynamiquement au besoin)
-        # self.projection = None
-        
     def __init__(self, temperature=4.0, alpha=0.5, beta=2.5, gamma=1.0, delta=0.0, use_diversity=False):
         super().__init__()
         self.temperature = temperature
@@ -25,12 +12,13 @@ class DCKDLoss(nn.Module):
         self.gamma = gamma    # poids CE (labels durs)
         self.delta = delta    # poids diversité (optionnel à 0 pour l’instant)
         self.use_diversity = use_diversity
-       
-       # Projection linéaire (sera initialisée dynamiquement au besoin)
         self.projection = None
-        self.initialized = False  # ← AJOUTE CETTE LIGNE
+        self.initialized = False 
 
     def forward(self, student_logits, teacher_logits, targets, student_features, teacher_features):
+        # Vérification des niveaux de features
+        if len(student_features) != len(teacher_features):
+            raise ValueError(f"Mismatch feature levels: {len(student_features)} vs {len(teacher_features)}")
         # --- KD classique ---
         kd_loss = F.kl_div(
             F.log_softmax(student_logits / self.temperature, dim=1),
@@ -43,8 +31,10 @@ class DCKDLoss(nn.Module):
         
         # --- Corrélation inter-feature ---
         corr_loss = 0.0
+        levels = 0
         for f_s, f_t in zip(student_features, teacher_features):
             # Aplatir
+            levels += 1
             f_s = f_s.view(f_s.size(0), -1)
             f_t = f_t.view(f_t.size(0), -1)
 
@@ -58,7 +48,8 @@ class DCKDLoss(nn.Module):
 
             # Cosine similarity
             corr_loss = corr_loss + (1.0 - F.cosine_similarity(f_s, f_t, dim=1).mean())
-            
+        if levels > 0:
+            corr_loss = corr_loss / levels  
         # 4) Diversité (désactivée pour cette étape)
         div_loss = torch.tensor(0.0, device=student_logits.device)
             
