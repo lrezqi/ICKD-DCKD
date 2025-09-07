@@ -40,10 +40,13 @@ class DCKDLoss(nn.Module):
             
             f_s = f_s.view(f_s.size(0), -1)
             f_t = f_t.view(f_t.size(0), -1)
-
+                
             if not self.initialized:
-                if f_s.shape != f_t.shape:
-                    self.projection = nn.Linear(f_s.shape, f_t.shape).to(f_s.device)
+               # f_s et f_t sont BxD après flatten; on aligne seulement la dimension D
+                in_feat = f_s.shape[1]   # entier: dimension features student après flatten
+                out_feat = f_t.shape[1]  # entier: dimension features teacher après flatten
+                if in_feat != out_feat:
+                    self.projection = nn.Linear(in_feat, out_feat).to(f_s.device)
                 self.initialized = True
 
             if self.projection is not None:
