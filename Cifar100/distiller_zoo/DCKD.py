@@ -15,6 +15,18 @@ class DCKDLoss(nn.Module):
         self.projection = None
         self.initialized = False 
 
+    @staticmethod
+    def _bchw_to_bcn(x):
+        # x: BxCxHxW -> BxCxN
+        B, C, H, W = x.shape
+        return x.view(B, C, H*W)
+
+    @staticmethod
+    def _gram_batched(x_bcn):
+        # x_bcn: BxCxN ; normaliser L2 sur N pour échelle-invariance puis Gram BxCxC
+        x = F.normalize(x_bcn, p=2, dim=2)   # L2 sur l’axe spatial
+        return torch.bmm(x, x.transpose(1, 2))  # BxCxC
+
     def forward(self, student_logits, teacher_logits, targets, student_features, teacher_features):
         # Vérification des niveaux de features
         if len(student_features) != len(teacher_features):
@@ -24,40 +36,39 @@ class DCKDLoss(nn.Module):
             F.log_softmax(student_logits / self.temperature, dim=1),
             F.softmax(teacher_logits / self.temperature, dim=1),
             reduction='batchmean'
-        ) * (self.temperature ** 2)
+        ) * (self.temperature ** 2)  [2][3]
         
         # 2) CrossEntropy (labels durs)
-        cls_loss = F.cross_entropy(student_logits, targets)
+        cls_loss = F.cross_entropy(student_logits, targets)  [4]
         
-        # --- Corrélation inter-feature ---
+        # --- Corr inter-canaux (Gram CxC)
         corr_loss = 0.0
         levels = 0
         for i, (f_s, f_t) in enumerate(zip(student_features, teacher_features)):
             # Aplatir
             if f_s.dim() != 4 or f_t.dim() != 4:
                 raise ValueError(f"Expected 4D features at level {i}, got {f_s.shape} and {f_t.shape}")
+        
+            # Si HxW diffèrent, optionnel: adapter f_s à la spatialité de f_t (interpolation bilinéaire)
+            if f_s.shape[2:] != f_t.shape[2:]:
+                f_s = F.interpolate(f_s, size=f_t.shape[2:], mode='bilinear', align_corners=False)
+
+            xs = self._bchw_to_bcn(f_s)  # BxCxN
+            xt = self._bchw_to_bcn(f_t)  # BxCxN
+
+            Gs = self._gram_batched(xs)  # BxCxC
+            Gt = self._gram_batched(xt)  # BxCxC
+
+            diff = Gs - Gt
+            B, C, _ = diff.shape
+            lc = diff.pow(2).sum() / (B * C * C)
+            corr_loss = corr_loss + lc
             levels += 1
             
-            f_s = f_s.view(f_s.size(0), -1)
-            f_t = f_t.view(f_t.size(0), -1)
-                
-            if not self.initialized:
-               # f_s et f_t sont BxD après flatten; on aligne seulement la dimension D
-                in_feat = f_s.shape[1]   # entier: dimension features student après flatten
-                out_feat = f_t.shape[1]  # entier: dimension features teacher après flatten
-                if in_feat != out_feat:
-                    self.projection = nn.Linear(in_feat, out_feat).to(f_s.device)
-                self.initialized = True
-
-            if self.projection is not None:
-                f_s = self.projection(f_s)
-
-            # Cosine similarity
-            corr_loss = corr_loss + (1.0 - F.cosine_similarity(f_s, f_t, dim=1).mean())
-            
         if levels > 0:
-            corr_loss = corr_loss / levels  
-        # 4) Diversité (désactivée pour cette étape)
+            corr_loss = corr_loss / levels  [1]  
+            
+        # 4) Diversité (pas encore)
         div_loss = torch.tensor(0.0, device=student_logits.device)
             
         # 5) Agrégation
