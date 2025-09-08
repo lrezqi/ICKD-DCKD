@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 class DCKDLoss(nn.Module):
     def __init__(self, temperature=4.0, alpha=0.5, beta=2.5, gamma=1.0, delta=0.0, use_diversity=False):
-        super().__init__()
+        super().init()
         self.temperature = temperature
         self.alpha = alpha    # poids KD
         self.beta = beta      # poids corrélation
