@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 class DCKDLoss(nn.Module):
     def __init__(self, temperature=4.0, alpha=0.5, beta=2.5, gamma=1.0, delta=0.0, use_diversity=False):
-        super().__init__()
+        super().init()
         self.temperature = temperature
         self.alpha = alpha    # poids KD
         self.beta = beta      # poids corrélation
@@ -36,10 +36,10 @@ class DCKDLoss(nn.Module):
             F.log_softmax(student_logits / self.temperature, dim=1),
             F.softmax(teacher_logits / self.temperature, dim=1),
             reduction='batchmean'
-        ) * (self.temperature ** 2)  [2][3]
+        ) * (self.temperature ** 2)  
         
         # 2) CrossEntropy (labels durs)
-        cls_loss = F.cross_entropy(student_logits, targets)  [4]
+        cls_loss = F.cross_entropy(student_logits, targets)  
         
         # --- Corr inter-canaux (Gram CxC)
         corr_loss = 0.0
@@ -66,7 +66,7 @@ class DCKDLoss(nn.Module):
             levels += 1
             
         if levels > 0:
-            corr_loss = corr_loss / levels  [1]  
+            corr_loss = corr_loss / levels    
             
         # 4) Diversité (pas encore)
         div_loss = torch.tensor(0.0, device=student_logits.device)
